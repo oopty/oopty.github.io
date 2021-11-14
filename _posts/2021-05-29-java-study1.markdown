@@ -1,12 +1,12 @@
 ---
 layout: post
 title:  "java study 1: 함수형 프로그래밍의 장점과 활용 방법"
-date:   2021-05-29 19:54:07 +0900
-categories: jekyll update
+date:   2021-11-15 00:23:45 +0900
+categories: java
 ---
 자바 8, 9, 10에 대한 책을 읽으면서 함수형 프로그래밍에 대해 알게 된 것과 서낀 것을 정리하려고 합니다. 개인적인 참고 용도와 저처럼 초보 개발자들을 위해 적겠습니다.😀
 
-![함수형프로그래밍](images/FunctionalProgramming.jpg)
+![함수형프로그래밍](/assets/images/FunctionalProgramming.jpg)
 
 ## 함수형 프로그래밍이란 무엇일까? 
 자바에서는 `stream`, `map`, `filter`등 많은 것들이 떠오르겠지만 위키피디아에서는 아래와 같이 정의한다.
