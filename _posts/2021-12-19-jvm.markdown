@@ -1,0 +1,116 @@
+---
+layout: post
+title:  "JVM의 구조와 GC"
+date:   2021-12-19 21:09:00 +0900
+categories: java
+---
+## JVM 구조
+JVM은 자바 바이트 코드를 실행할 수 있는 주체이고 일반적으로 인터프리터나 미리 기계어로 만들어 놓는 방식인 JIT(Just in Time) 방식으로 다른 컴퓨터 위에서 바이트 코드를 실행할 수 있도록 만들어 놓은 프로그램 또는 하드웨어이다. 운영체제에 상관없이 JVM위에서 같은 동작이 구동되게 보장하고 GC와 같은 메모리 관리와 클래스 로더를 통해 명령을 실행한다.
+
+![jvm 실행 흐름](/assets/images/jvm-flow.png)
+
+위 그림은 자바를 컴파일하고 JVM이 실행하는 흐름을 도식적으로 표현한 것이다. 사용자 코드를 jdk에 포함되어 있는 javac가 자바 소스를 컴파일해 자바 바이트코드를 만들고 클래스 로더가 읽어들여 JVM의 실행이 시작된다. 외부에서 JVM의 코드를 이용할 때는 [Java Native Interface](https://en.wikipedia.org/wiki/Java_Native_Interface)를 통해 상효작용한다. 프로그램 실행을 위해 필요한 구성요소인 Runtime Data Areas 중 PC Register, JVM stack, Native Method Stack은 쓰레드마다 생성되고 Heap과 Method Area는 공유한다. Runtime Data Areas의 각 요소를 하나씩 알아보자
+
+### Method Area
+JVM이 시작될 때 생성되며 클래스와 인터페이스의 런타임 상수 풀, 필드와 메서드 코드, static 변수 등을 보관한다.
+
+### Heap
+객체를 생성하면 메모리 할당이 이루어지는 곳이다. 메서드 영역에 로드된 클래스만 생성이 가능하고 GC에 의해 참조되지 않는 객체를 확인 후 제거하는 작업이 이루어진다.
+
+### PC Register
+쓰레드가 어떤 부분을 무슨 명령어로 실행해야할 지에 대한 정보를 가지고 있고 현재 수행중인 쓰레드 명령의 주소를 가지고 있다.
+
+### JVM Stack
+메서드를 호출하면 리턴 주소, 지역 변수, 매개 변수, 메소드 정보, 연산 중 필요한 임시 데이터를 저장하는 곳이다.
+
+### Native Method Stack
+Native Method가 호출되면 쌓이는 곳이다. 일반적인 자바 Method가 호출되면 `JVM Stack`에 쌓이지만 네이티브 방식의 메서드(C/C++ 형태)가 불려진다면 여기 `Native Method Stack`에 쌓인다.
+
+## Garbage Collector
+메모리 관리 기법 중 하나로, 필요없게 된 메모리 영역을 해제하는 기능이다. 단계적으로 `Mark`, `Sweep` 그리고 `Compact`로 나뉘어진다. 
+
+### Mark & Sweep & Compact
+- `Mark`: 필요한 객체인지 필요하지 않은 객체인지 대략적으로 구별하고 표시는 단계, 이 객체가 미래에 필요한지는 알 수 없으므로 Reference로 닿을 수 없는 객체를 필요하지 않은 객체로 정의한다.
+- `Sweep`: `Mark`된 객체를 해제하고 반환하는 과정
+- `Compact`: 제거된 객체때문에 생긴 빈공간을 정리하여 없애는 과정
+
+### Mark by Reference
+닿을 수 없는 객체를 찾을 때 `JVM Stack`과 `Native Method Stack` 그리고 `Method Area`에 있는 참조를 root로 해서 닿을 수 없는 객체를 찾는다. 닿을 수 있는 객체를 `Reachable` 객체, 없는 객체를 `UnReachable` 객체라고 정의하고 참조하는 객체를 `Reference Object`, 이 객체에 의해 참조되는 객체를 `Referent`라고 정의한다.
+
+![Reference](/assets/images/heap_reference.png)
+
+사용자 레벨 코드에서 이 Reference를 변경할 수 없어 GC에 사용자 코드가 관여할 수 없었다. 하지만 `Java 1.2`부터 `java.lang.ref`패키지를 추가해 soft, weark, phantom 3가지 방식의 레퍼런스를 사용할 수 있게 되었다.
+
+#### Strong Reference
+- new 연산자로 참조값을 생성하거나 참조값을 변수에 대입하면 `Strong Reference`로 참조된다. 참조를 타고가다가 닿을 수 있으면 `Strongly Reachable` 객체로 구분한다.
+- root set으로 부터 시작해서 어떤 `reference object`도 중간에 끼지 않은 상태로 참조 가능한 객체로 정의한다.
+
+#### Soft Reference
+- root set으로 부터 시작해서 `Strongly Reachable`객체가 아닌 객체 중에서 `Weak Reference`, `Phantom Reference`없이 `Soft Reference`가 있는 참조 사슬이 하나라도 있는 객체를 `Sofly Reachable` 객체로 정의한다.
+- `Softly Reachable`객체는 아래 식에 의해 GC를 수행로 때 제거 여부를 결정한다.
+> (마지막 strong reference가 GC된 때로부터 지금까지의 시간) > (옵션 설정값 N) * (힙에 남아있는 메모리 크기)
+- 옵션 N은 아래처럼 JVM을 실행할 때 줄수있다. 옵션 설정이 낮을 수록 메모리 회수 속도가 빨라진다.
+> -XX:SoftRefLRUPolicyMSPerMB=\<N\>
+
+#### Weak Reference
+- root set으로 부터 시작해서 `Strongly Reachable`, `Softly Reachable` 객체가 아니고 `Phantom Reference`없이 `Weak Reference`가 있는 참조 사슬이 하나라도 있는 객체를 `Weakly Reachable`객체로 정의한다.
+- `Weakly Reachable`객체는 매 GC마다 제거된다.
+- 매 GC때마다 삭제되도 되는 캐시같은 경우 사용한다.
+
+#### Phantom Reference
+- Finalize 이후의 작업을 처리할 때 사용한다. 참조값을 null로 만드는 clear()를 명시적으로 불러줘야한다.
+- Finalize 작업은 GC에 따라 실행이 안될 수 있고 예외가 발생되면 무시되서 ReferenceQueue에서 지워진 Reference에 대한 후처리 작업을 해준다.
+
+GC의 처리 순서는 아래와 같다
+1. Soft References
+2. Weak References
+3. Finalize
+4. Phantom References
+5. 메모리 회수
+
+Phantom References에 대한 처리는 Finalize 이후에 처리된다. Soft, Weak References는 객체 내의 참조를 null로 바꾼 뒤 ReferenceQueue에 enqueue되지만 Phantom References는 발견되자마자 Finalize 이후 ReferenceQueue에 넣어진다. 사용자 코드에서 이 ReferenceQueue에 접근해 후처리 작업을 할 수 있으며 `clear()` 메서드를 통해 참조를 null로 만들어 주어야한다.
+
+### GC 알고리즘
+GC는 Heap에서 메모리 관리를 위해 일어나며 `Mark` -> `Sweep` -> `Compact`순으로 일어난다.
+
+#### Heap 메모리 구조
+![Heap 메모리 구조](/assets/images/JVM_heap_structure.png)
+
+힙영역은 `Young` 영역과 `Old` 영역과 `Perm` 영역으로 나뉘어진다. 그리고 `Young` 영역은 `Eden`과 두 개의 `Survivor`영역으로 나뉘어진다. 새로 생성되는 객체는 대부분 `Eden`영역에 할당된다. 할당될 때 bump-the-pointer와 TLABs(Thread-Local Allocation Buffers)라는 기술이 쓰이는데 bump-then-pointer는 마지막으로 할당된 객체의 참조를 가지고 있어서 새로운 메모리 할당이 일어날때 신속하게 사이즈 체크와 할당이 이루어진다. TLABs는 여러 쓰레드가 동시에 할당하려고 할 때 안정성에 문제가 있으므로 각 쓰레드마다 Eden영역을 나눠가질 수 있게 만든 것이다.
+#### Young 영역의 구성과 GC
+![Young Gen GC](/assets/images/YoungGenGC.png)
+
+`Young`영역은 `Eden`과 두 개의 `Survivor`영역으로 구성되고 `Minor GC`로 메모리 관리를 한다. `Eden` 영역에서 GC가 발생한 후 살아남은 객체들은 두 `Survivor` 영역 중 한 곳으로 이동한다. 이 `Survivor`영역이 가득차게 되면 GC가 동작하고 살아남은 객체들은 다른 `Survivor`영역으로 이동한다. 몇 번의 반복 후에도 살아남은 객체는 Old 영역으로 이동한다. Old영역으로 넘어가는 기준은 MaxTenuringThreshold 설정값을 통해 조절 가능하다. Minor GC에서도 STW(Stop-The-World)는 일어나고 살아남는 객체가 많을 수록 이동하는 시간이 길어져 STW 시간이 길어진다.
+
+#### GC 알고리즘
+GC 알고리즘은 JVM 옵션으로 선택할 수 있으며 각 어플리케이션에 맞게 끔 여러 요인을 따져보고 선택해야한다. 
+
+##### Serial GC (-XX:+UserSerialGC)
+Serial GC는 32bit JVM의 기본값이며 타겟 플랫폼의 CPU 코어 수가 적은 경우 유리하다. 하나의 쓰레드가 `Mark`, `Sweep`, `Compact`하는 방법이다.
+
+##### Parallel GC (-XX:+UseParallelGC)
+![Parallel GC vs Serial GC](/assets/images/SerialGCvsParallelGC.png)  
+
+Serial GC를 병렬로 처리해 STW 시간을 줄인 방법이다.
+
+##### Parallel Old GC(-XX:+UseParallelOldGC)
+위 과정과 비슷하지만 Old 영역의 GC가 `Mark` -> `Summary` -> `Compact` 과정을 거친다. `Summary` 단계는 `Sweep` 단계와 다르게 여러 쓰레드가 동시에 훑는다고 한다. 그리고 앞선 GC에서 Compact된 영역도 별도로 훑는다.
+
+##### CMS GC (-XX:+UseConcMarkSeepGC)
+![CMS GC](/assets/images/CMSGC.png)
+
+각 단계를 나눠 중간에 다른 작업을 할 수 있게 끔 만든 것이다. STW 시간을 줄였으며 초기 root set을 찾는 과정인 `Initial Mark`와 Concurrent Mark 도중 생기는 객체를 위해 수행하는 `Remark` 이 두 단계에서만 STW가 일어난다.
+
+##### G1 GC
+![G1 GC](/assets/images/G1GC.png)
+
+G1 GC는 Young 영역과 Old 영역이 나뉘어져 적용되던 위 4가지 방법과 다르게 메모리를 구역별로 나눠 해당 영역이 가득 차면 다른 영역에 객체를 할당하고 GC를 수행하는 방식이다. 위 4가지 방법과 비교했을 때 가장 빠르다.
+
+## 다음은 GC 모니터링과 튜닝 방법
+인터넷에 돌아다니는 정보들을 찾아보고 정리해보았는데요. 궁금한 것에 대해 찾아보려해도 자세한 내용을 설명하는 글은 많지 않네요. 관리 툴을 사용해보면서 직접 메모리를 보며 실전 경험으로 알아가야 할 거 같습니다. 😅  다음 포스팅은 GC 모니터링과 튜닝 방법에 대해 공부하고 정리할게요!
+
+## 참고 자료
+- [네이버 D2: Java Garbage Collection](https://d2.naver.com/helloworld/1329)
+- [네이버 D2: Java Reference와 GC](https://d2.naver.com/helloworld/329631)
+- [Java Phantom Reachable, Phantom Reference 란](https://luckydavekim.github.io/development/back-end/java/phantom-reference-in-java)
+- [JAVA GARBAGE COLLECTION HANDBOOK](https://plumbr.io/handbook/garbage-collection-in-java/minor-gc-major-gc-full-gc)

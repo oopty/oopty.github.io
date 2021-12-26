@@ -9,5 +9,4 @@ permalink: /about/
 
 ### 관심분야
 - Spring, Vue
-- OOP, Refactoring
-- Algorithm, PS
+- block chain
