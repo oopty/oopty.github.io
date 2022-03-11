@@ -2,7 +2,8 @@
 layout: post
 title:  "자바스크립트 동작 원리에대한 개념 정리"
 date:   2021-12-12 00:23:45 +0900
-categories: javascript
+categories: [javascript]
+tags: [javascript, v8, webassembly, node.js, garbege collector, gc, event loop, single thread]
 ---
 ## 시작하며
 이번에는 자바 런타임에서 바이트코드를 실행할 수 있는 JVM(Java Virtual Machine)과 Javascript 엔진인 V8에 대해 비교하며 살펴보려고 합니다. 개발하다 보면 많이 듣는 용어고 의미정도는 어렴풋이 알고 있긴 하지만 설명을 하라고 하면 못할 거 같습니다.. 😓 그래서 이번엔 V8과 JVM에 대해 정리하고 관련된 용어(`Node.js`, `ECMAScript`, `JDK`, `GC`)도 공부해보려고 합니다. 잘못된 정보나 제 말에 억측이 있어 짚어주신다면 고맙겠습니다~ 😊
@@ -66,20 +67,20 @@ f();
 
 - 힙 메모리 사용량 늘리기
 
-```
+```shell
 node --max-old-space-size=6000 index.js
 ```
 
 - 가비지 수집기 디버깅
 
-```
+```shell
 node --expose-gc --inspect index.js
 ```
 
 ## 이벤트 루프
 자바스크립트는 '단일 스레드'기반의 언어다. 하지만 브라우저를 사용해 보면 렌더링을 하는 동시에 HTTP request도 보내고 setTimeout으로 콜백을 전달하기도 한다. 이러한 동작은 단일 스레드에서 어떻게 수행하는 것일까? 즉, 자바스크립트의 동시성(Concurrency)는 어떻게 동작하는 것일까?
 
-![이벤트 루프 고수준 관점](/assets/images/highLevelEventLoopView.jpg)
+![이벤트 루프 고수준 관점](/assets/images/highLevelEventLoopView.jpg){: w='100%' h='100%' }
 
 이벤트 루프는 V8엔진에 있는 것이 아니라 비동기 I/O를 지원하는 멀티 플랫폼 C라이브러리인 LibUV에 있다. 자바스크립트의 규격인 ECMAScript에는 이벤트 루프나 비동기에 관련된 언급이 없다고 한다. libUV가 있기 때문에 자바스크립트에서 동시성을 사용할 수 있는 것이다. 
 

@@ -2,7 +2,8 @@
 layout: post
 title:  "JVM의 구조와 GC"
 date:   2021-12-19 21:09:00 +0900
-categories: java
+categories: [java]
+tags: [java, gc, garbege collector, jvm, soft refrence, stong reference, weak reference, phantom reference, young area, old area, perm area, serial gc, parallel gc, parallel old gc, cms gc, g1 gc]
 ---
 ## JVM 구조
 JVM은 자바 바이트 코드를 실행할 수 있는 주체이고 일반적으로 인터프리터나 미리 기계어로 만들어 놓는 방식인 JIT(Just in Time) 방식으로 다른 컴퓨터 위에서 바이트 코드를 실행할 수 있도록 만들어 놓은 프로그램 또는 하드웨어이다. 운영체제에 상관없이 JVM위에서 같은 동작이 구동되게 보장하고 GC와 같은 메모리 관리와 클래스 로더를 통해 명령을 실행한다.

@@ -2,9 +2,12 @@
 layout: post
 title:  "스프링 부트 예외처리 완벽 가이드"
 date:   2022-01-16 21:40:00 +0900
-categories: Spring
+categories: [java, spring]
+tags: [excpetion handling, spring, java, controlleradvice, anotation]
+image:
+  src: /assets/images/20220116_404-not-found.jpg
+  alt: 404에러
 ---
-![404에러](/assets/images/20220116_404-not-found.jpg)
 
 회사에서 `Spring Boot` 관련 프로젝트를 진행하면서 스프링에서 지원하는 어노테이션 스펙이 궁금했고 우리 프로젝트엔 어떻게 적용되어 있는지 살펴보고 싶었다. 때마침 기술관련된 내용을 잘 정리한 사이트를 찾아서 예외처리 관련된 주제를 번역하면서 정리하려고 합니다. 아래 내용은 [Complete Guide to Exception Handling in Spring Boot](https://reflectoring.io/spring-boot-exception-handling/#responsestatus)에 있던 내용을 제가 이해한 수준으로 번역한 결과입니다.
 
@@ -358,7 +361,7 @@ public class ProductController {
 
 그러기 위해, `refactoring.trace` 서버-사이드 속성을 소개할 것입니다. 이것은 `true`로 설정되면 응답에서 `stackTrace`를 필드를 제공합니다. 실제로 API에서 `stackTrace`를 얻기 위해서는 클라이언트는 추가적으로 `trace` 파라미터를 `true`로 보내야 합니다.
 
-```curl
+```shell
 curl --location --request GET 'http://localhost:8080/product/1?trace=true
 ```
 
