@@ -1,0 +1,78 @@
+# The layout text of site
+
+# ----- Commons label -----
+
+layout:
+  post: Post
+  category: Category
+  tag: Tag
+
+# The tabs of sidebar
+tabs:
+  # format: <filename_without_extension>: <value>
+  home: Home
+  categories: Categories
+  tags: Tags
+  archives: Archives
+  about: About
+
+# the text displayed in the search bar & search results
+search:
+  hint: search
+  cancel: Cancel
+  no_results: 검색 결과가 없습니다.
+
+panel:
+  lastmod: Recently Updated
+  trending_tags: Trending Tags
+  toc: Contents
+
+copyright:
+  # Shown at the bottom of the post
+  license:
+    template: 이 기사는 저작권자의 :LICENSE_NAME 라이센스를 따릅니다.
+    name: CC BY 4.0
+    link: https://creativecommons.org/licenses/by/4.0/
+
+  # Displayed in the footer
+  brief: Some rights reserved.
+  verbose: >-
+    명시되지 않는 한 이 사이트의 블로그 게시물은 작성자의
+    Creative Commons Attribution 4.0 International(CC BY 4.0) 라이선스에 따라 사용이 허가되었습니다.
+
+meta: Powered by :PLATFORM with :THEME theme.
+
+not_found:
+  statment: 해당 URL은 존재하지 않습니다.
+  hint_template: :HEAD_BAK을 눌러 다시 찾거나 :ARCHIVES_PAGE에서 검색해 주세요.
+  head_back: 홈으로 돌아가기
+  archives_page: 아카이브 페이지
+
+# ----- Posts related labels -----
+
+post:
+  written_by: By
+  posted: Posted
+  updated: Updated
+  words: words
+  pageview_measure: views
+  read_time:
+    unit: min
+    prompt: read
+  relate_posts: Further Reading
+  share: Share
+  button:
+    next: Newer
+    previous: Older
+    copy_code:
+      succeed: 복사되었습니다!
+    share_link:
+      title: Copy link
+      succeed: 링크가 복사되었습니다!
+  # pinned prompt of posts list on homepage
+  pin_prompt: Pinned
+
+# categories page
+categories:
+  category_measure: categories
+  post_measure: posts
