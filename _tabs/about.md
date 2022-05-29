@@ -8,6 +8,11 @@ order: 4
 - `Java`, `Spring`, `JPA/Hibernate`, `Mybatis`
 - `javascript`, `Vue`, `Vuex`
 - `Jenkins`, `AWS EC2`, `AWS S3`, `AWS RDS` 그 외 AWS 관련된 것들
+
+# My hobby
+- 테니스
+- 게임
+- 드라마, 영화
   
 # 1st year
 ## What I interested?
@@ -25,14 +30,9 @@ order: 4
 - 팀원과 같이 개발할 때 지켜야 하는 것들
 - 업비트/바이낸스 자동 매매 프로그램
 
-# 2st year
+# 2rd year
 ## What I interest?
 - 웹 기반 기술들을 더 깊게
 - 블록체인 활용 방법
 - 개발과 유지보수가 쉬운 프로젝트로 가는 방법
 - 의존성이 높은 Legacy 코드, Dirty 코드를 없애거나 줄이는 방법
-
-# My hobby
-- 테니스
-- 게임
-- 드라마, 영화
