@@ -1,10 +1,10 @@
 ---
 title: 가비지 컬렉터 튜닝
-date: 2022-06-12 00:02:14 +09:00
+date: 2022-06-12 02:14:00 +09:00
 categories: [java]
 tags: [java, jvm, gc, gc tuning]
 image:
-    src: /assets/images/java-gc.png
+    src: /assets/images/java-gc.jpeg
     alt: java gc
 ---
 # 지난 이야기

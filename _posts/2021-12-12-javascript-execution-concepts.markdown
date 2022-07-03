@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "자바스크립트 동작 원리에대한 개념 정리"
-date:   2021-12-12 00:23:45 +0900
+date:   2021-12-12 23:45:00 +0900
 categories: [javascript]
 tags: [javascript, v8, webassembly, node.js, garbege collector, gc, event loop, single thread]
 ---
