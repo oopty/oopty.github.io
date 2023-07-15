@@ -1,6 +1,6 @@
 ---
 title: Effective Java 정리 Item1
-date: 2023-02-18 +09:00
+date: 2023-07-15 +09:00
 categories: [java]
 tags: [effectivejava, java]
 ---
