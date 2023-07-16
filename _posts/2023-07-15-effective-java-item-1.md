@@ -7,13 +7,13 @@ tags: [effectivejava, java]
 안녕하세요. 최근에 Effective Java를 읽으면서 자바의 고급 스킬에 대해 많이 배웠는데요 이를 글로 적어 다시 복습하려고 합니다.
 
 ## item1. 생성자 대신 정적 펙토리 메서드를 고려하라
-정적 펙터리 메서드는 아래와 같이 생성자를 통해 객체를 생성하는 방법입니다.
+정적 펙터리 메서드는 아래와 같이 private 생성자를 통해 객체를 생성하는 방법입니다.
 ```java
 class MyClass {
     int myField1;
     String myField2;
 
-    public MyClass(int myField1, String myField2) {
+    private MyClass(int myField1, String myField2) {
         this.myField1 = myField1;
         this.myField2 = myField2;
     }
