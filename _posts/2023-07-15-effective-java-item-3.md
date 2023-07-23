@@ -39,7 +39,9 @@ static <E> List<E> of() {
 세번째로는 메서드 참조를 공급자(Supplier)로 사용할 수 있습니다. ElvisV2::getInstance를 Supplier<Elvis>에 사용할 수 있습니다.
 
 ### 열거 타입
-public enum Elvis {
+```java
+public enum ElvisV3 {
     INSTANCE;
 }
+```
 훨씬 더 간결하고, Reflection 공격과 역직렬화 공격에도 안전합니다. 대부분의 상황에서는 원소가 하나뿐인 열거타입이 싱글톤을 만드는 가장 좋은 방법입니다. 단, 만들려는 싱글톤이 enum 외의 클래스를 상속해야 한다면 이 방법은 사용할 수 없습니다.
