@@ -1,0 +1,441 @@
+<!DOCTYPE html><html lang="custom" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="prefer-datetime-locale" content="ko"><meta name="generator" content="Jekyll v4.2.2" /><meta property="og:title" content="Spring Boot와 @WebMVCTest로 MVC Controller를 테스트 하는 방법" /><meta property="og:locale" content="custom" /><meta name="description" content="이 글은 Testing MVC Web Controllers with Spring Boot and @WebMvcTest을 해석하고 정리한 글입니다." /><meta property="og:description" content="이 글은 Testing MVC Web Controllers with Spring Boot and @WebMvcTest을 해석하고 정리한 글입니다." /><link rel="canonical" href="https://oopty.github.io/posts/mvc-testing/" /><meta property="og:url" content="https://oopty.github.io/posts/mvc-testing/" /><meta property="og:site_name" content="oopty" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2022-07-02T20:14:00+09:00" /><meta name="twitter:card" content="summary" /><meta property="twitter:title" content="Spring Boot와 @WebMVCTest로 MVC Controller를 테스트 하는 방법" /><meta name="twitter:site" content="@twitter_username" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-07-02T20:14:00+09:00","datePublished":"2022-07-02T20:14:00+09:00","description":"이 글은 Testing MVC Web Controllers with Spring Boot and @WebMvcTest을 해석하고 정리한 글입니다.","headline":"Spring Boot와 @WebMVCTest로 MVC Controller를 테스트 하는 방법","mainEntityOfPage":{"@type":"WebPage","@id":"https://oopty.github.io/posts/mvc-testing/"},"url":"https://oopty.github.io/posts/mvc-testing/"}</script><title>Spring Boot와 @WebMVCTest로 MVC Controller를 테스트 하는 방법 | oopty</title><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><meta name="apple-mobile-web-app-title" content="oopty"><meta name="application-name" content="oopty"><meta name="msapplication-TileColor" content="#da532c"><meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.googleapis.com" ><link rel="dns-prefetch" href="https://fonts.googleapis.com" ><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="dns-prefetch" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com" ><link rel="dns-prefetch" href="https://fonts.googleapis.com" ><link rel="preconnect" href="https://cdn.jsdelivr.net" ><link rel="dns-prefetch" href="https://cdn.jsdelivr.net" ><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato&family=Source+Sans+Pro:wght@400;600;700;900&display=swap"><link rel="preconnect" href="https://www.google-analytics.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://www.google-analytics.com"><link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/css/all.min.css"><link rel="stylesheet" href="/assets/css/style.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup@1/dist/magnific-popup.min.css"> <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script> <script type="text/javascript"> class ModeToggle { static get MODE_KEY() { return "mode"; } static get MODE_ATTR() { return "data-mode"; } static get DARK_MODE() { return "dark"; } static get LIGHT_MODE() { return "light"; } static get ID() { return "mode-toggle"; } constructor() { if (this.hasMode) { if (this.isDarkMode) { if (!this.isSysDarkPrefer) { this.setDark(); } } else { if (this.isSysDarkPrefer) { this.setLight(); } } } let self = this; /* always follow the system prefers */ this.sysDarkPrefers.addEventListener("change", () => { if (self.hasMode) { if (self.isDarkMode) { if (!self.isSysDarkPrefer) { self.setDark(); } } else { if (self.isSysDarkPrefer) { self.setLight(); } } self.clearMode(); } self.notify(); }); } /* constructor() */ get sysDarkPrefers() { return window.matchMedia("(prefers-color-scheme: dark)"); } get isSysDarkPrefer() { return this.sysDarkPrefers.matches; } get isDarkMode() { return this.mode === ModeToggle.DARK_MODE; } get isLightMode() { return this.mode === ModeToggle.LIGHT_MODE; } get hasMode() { return this.mode != null; } get mode() { return sessionStorage.getItem(ModeToggle.MODE_KEY); } /* get the current mode on screen */ get modeStatus() { if (this.isDarkMode || (!this.hasMode && this.isSysDarkPrefer)) { return ModeToggle.DARK_MODE; } else { return ModeToggle.LIGHT_MODE; } } setDark() { $('html').attr(ModeToggle.MODE_ATTR, ModeToggle.DARK_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.DARK_MODE); } setLight() { $('html').attr(ModeToggle.MODE_ATTR, ModeToggle.LIGHT_MODE); sessionStorage.setItem(ModeToggle.MODE_KEY, ModeToggle.LIGHT_MODE); } clearMode() { $('html').removeAttr(ModeToggle.MODE_ATTR); sessionStorage.removeItem(ModeToggle.MODE_KEY); } /* Notify another plugins that the theme mode has changed */ notify() { window.postMessage({ direction: ModeToggle.ID, message: this.modeStatus }, "*"); } } /* ModeToggle */ const toggle = new ModeToggle(); function flipMode() { if (toggle.hasMode) { if (toggle.isSysDarkPrefer) { if (toggle.isLightMode) { toggle.clearMode(); } else { toggle.setLight(); } } else { if (toggle.isDarkMode) { toggle.clearMode(); } else { toggle.setDark(); } } } else { if (toggle.isSysDarkPrefer) { toggle.setLight(); } else { toggle.setDark(); } } toggle.notify(); } /* flipMode() */ </script><body data-spy="scroll" data-target="#toc" data-topbar-visible="true"><div id="sidebar" class="d-flex flex-column align-items-end"><div class="profile-wrapper text-center"><div id="avatar"> <a href="/" alt="avatar" class="mx-auto"> <img src=" /commons/avatar.jpeg " alt="avatar" onerror="this.style.display='none'"> </a></div><div class="site-title mt-3"> <a href="/">oopty</a></div><div class="site-subtitle font-italic">Stand on the shoulders of giants</div></div><ul class="w-100"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home ml-xl-3 mr-xl-3 unloaded"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream ml-xl-3 mr-xl-3 unloaded"></i> <span>CATEGORIES</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tag ml-xl-3 mr-xl-3 unloaded"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive ml-xl-3 mr-xl-3 unloaded"></i> <span>ARCHIVES</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info-circle ml-xl-3 mr-xl-3 unloaded"></i> <span>ABOUT</span> </a></ul><div class="sidebar-bottom mt-auto d-flex flex-wrap justify-content-center align-items-center"> <button class="mode-toggle btn" aria-label="Switch Mode"> <i class="fas fa-adjust"></i> </button> <span class="icon-border"></span> <a href="https://github.com/oopty" aria-label="github" target="_blank" rel="noopener"> <i class="fab fa-github"></i> </a> <a href=" javascript:location.href = 'mailto:' + ['minjun13795','gmail.com'].join('@')" aria-label="email" > <i class="fas fa-envelope"></i> </a> <a href="/feed.xml" aria-label="rss" > <i class="fas fa-rss"></i> </a></div></div><div id="topbar-wrapper" class="row justify-content-center"><div id="topbar" class="col-11 d-flex h-100 align-items-center justify-content-between"> <span id="breadcrumb"> <span> <a href="/"> Home </a> </span> <span>Spring Boot와 @WebMVCTest로 MVC Controller를 테스트 하는 방법</span> </span> <i id="sidebar-trigger" class="fas fa-bars fa-fw"></i><div id="topbar-title"> Post</div><i id="search-trigger" class="fas fa-search fa-fw"></i> <span id="search-wrapper" class="align-items-center"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="Search..."> </span> <span id="search-cancel" >Cancel</span></div></div><div id="main-wrapper"><div id="main"><div class="row"><div id="core-wrapper" class="col-12 col-lg-11 col-xl-8"><div class="post pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><h1 data-toc-skip>Spring Boot와 @WebMVCTest로 MVC Controller를 테스트 하는 방법</h1><div class="post-meta text-muted"><div> By <em> <a href="https://github.com/oopty">oopty</a> </em></div><div class="d-flex"><div> <span> Posted <em class="timeago" data-ts="1656760440" data-toggle="tooltip" data-placement="bottom" data-tooltip-df="llll" > 2022-07-02 </em> </span> <span class="readtime" data-toggle="tooltip" data-placement="bottom" title="3412 words"> <em>18 min</em> read</span></div></div></div><div class="post-content"><p>이 글은 <a href="https://reflectoring.io/spring-boot-web-controller-test/">Testing MVC Web Controllers with Spring Boot and @WebMvcTest</a>을 해석하고 정리한 글입니다.</p><p>이번 글에서는 Controller에 대해 살펴볼 것이다. 먼저 책임 전체를 수용하는 테스트를 작성하기 위해 web Controller가 무엇을 하는지 탐색할 것이다. 그러고 각각 책임을 수용하는 테스트를 작성하는 방법을 찾을 것이다. 이러한 책임이 테스트 되어야지만 Controller가 운영 환경에서 예상대로 동작하는지 확인할 수 있다.</p><p>이 글은 <a href="https://github.com/thombergs/code-examples/tree/master/spring-boot/spring-boot-testing">예제</a>를 제공한다.</p><h2 id="의존성"><span class="mr-2">의존성</span><a href="#의존성" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2></h2><p>Junit Jupiter(Junit5)를 사용할 것이고 모킹을 위해 Mockito, 어썰션을 위해 AssertJ와 보일러 플레이트 코드를 줄이기 위해 Lombok을 사용할 거다.</p><div class="language-gradle highlighter-rouge"><div class="code-header"> <span data-label-text="Gradle"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre><td class="rouge-code"><pre><span class="k">dependencies</span> <span class="o">{</span>
+  <span class="n">compile</span><span class="o">(</span><span class="s1">'org.springframework.boot:spring-boot-starter-web'</span><span class="o">)</span>
+  <span class="n">compileOnly</span><span class="o">(</span><span class="s1">'org.projectlombok:lombok'</span><span class="o">)</span>
+  <span class="n">testCompile</span><span class="o">(</span><span class="s1">'org.springframework.boot:spring-boot-starter-test'</span><span class="o">)</span>
+  <span class="n">testCompile</span> <span class="s1">'org.junit.jupiter:junit-jupiter-engine:5.2.0'</span>
+  <span class="n">testCompile</span><span class="o">(</span><span class="s1">'org.mockito:mockito-junit-jupiter:2.23.0'</span><span class="o">)</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>AssertJ와 Mockito는 <code class="language-plaintext highlighter-rouge">spring-boot-starter-test</code> 의존성에서 자연스럽게 들어온다.</p><h2 id="web-controller의-책임"><span class="mr-2">Web Controller의 책임</span><a href="#web-controller의-책임" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2></h2><p>아래의 전형적인 REST Controller를 보자</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+</pre><td class="rouge-code"><pre><span class="nd">@RestController</span>
+<span class="nd">@RequiredArgsConstructor</span>
+<span class="kd">class</span> <span class="nc">RegisterRestController</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="nc">RegisterUseCase</span> <span class="n">registerUseCase</span><span class="o">;</span>
+
+  <span class="nd">@PostMapping</span><span class="o">(</span><span class="s">"/forums/{forumId}/register"</span><span class="o">)</span>
+  <span class="nc">UserResource</span> <span class="nf">register</span><span class="o">(</span>
+          <span class="nd">@PathVariable</span><span class="o">(</span><span class="s">"forumId"</span><span class="o">)</span> <span class="nc">Long</span> <span class="n">forumId</span><span class="o">,</span>
+          <span class="nd">@Valid</span> <span class="nd">@RequestBody</span> <span class="nc">UserResource</span> <span class="n">userResource</span><span class="o">,</span>
+          <span class="nd">@RequestParam</span><span class="o">(</span><span class="s">"sendWelcomeMail"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">sendWelcomeMail</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="nc">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">User</span><span class="o">(</span>
+            <span class="n">userResource</span><span class="o">.</span><span class="na">getName</span><span class="o">(),</span>
+            <span class="n">userResource</span><span class="o">.</span><span class="na">getEmail</span><span class="o">());</span>
+    <span class="nc">Long</span> <span class="n">userId</span> <span class="o">=</span> <span class="n">registerUseCase</span><span class="o">.</span><span class="na">registerUser</span><span class="o">(</span><span class="n">user</span><span class="o">,</span> <span class="n">sendWelcomeMail</span><span class="o">);</span>
+
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">UserResource</span><span class="o">(</span>
+            <span class="n">userId</span><span class="o">,</span>
+            <span class="n">user</span><span class="o">.</span><span class="na">getName</span><span class="o">(),</span>
+            <span class="n">user</span><span class="o">.</span><span class="na">getEmail</span><span class="o">());</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></table></code></div></div><p>URL을 정의하고 POST 매핑을 해주는 <code class="language-plaintext highlighter-rouge">PostMapping</code> HTTP request를 Deserialze해주는 <code class="language-plaintext highlighter-rouge">@PathVariable</code>, <code class="language-plaintext highlighter-rouge">@RequestBody</code>등 Spring이 지원해주는 많은 기능들이 있다. Controller를 테스트할 때 이런 것 까지 테스트를 해줘야 할까? 우리가 기대하는 Controller의 책임은 아래와 같다.</p><ol><li>HTTP Request 요청 수신<li>Input Deserialization<li>요청 검증<li>비지니스 로직 호출<li>Output Serialization<li>예외 변환</ol><p>4번을 제외한 나머지 로직은 스프링이 지원해주는 부분이다. 하지만 우리가 Controller에 기대하는 책임이어서 이를 테스트하지 않는다면 운영환경에서 기대하는 대로 동작을 안할 수 있다. 아쉽게도 Unit Test로는 Spring이 지원해주는 부분을 테스트할 수 없다. 따라서 우리는 Spring의 HTTP 지원과 Controller 코드 사이에서 Integration Test를 해야한다.</p><h2 id="webmvctest로-controller-책임을-검증하기"><span class="mr-2">@WebMvcTest로 Controller 책임을 검증하기</span><a href="#webmvctest로-controller-책임을-검증하기" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2></h2><p>Spring Boot는 <code class="language-plaintext highlighter-rouge">@WebMvcTest</code> 어노세이션을 제공하고 web controller를 테스팅하는데 필요한 빈들만 포함한 application context을 뛰운다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre><td class="rouge-code"><pre><span class="nd">@ExtendWith</span><span class="o">(</span><span class="nc">SpringExtension</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@WebMvcTest</span><span class="o">(</span><span class="n">controllers</span> <span class="o">=</span> <span class="nc">RegisterRestController</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">RegisterRestControllerTest</span> <span class="o">{</span>
+  <span class="nd">@Autowired</span>
+  <span class="kd">private</span> <span class="nc">MockMvc</span> <span class="n">mockMvc</span><span class="o">;</span>
+
+  <span class="nd">@Autowired</span>
+  <span class="kd">private</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span><span class="o">;</span>
+
+  <span class="nd">@MockBean</span>
+  <span class="kd">private</span> <span class="nc">RegisterUseCase</span> <span class="n">registerUserCase</span><span class="o">;</span>
+
+  <span class="nd">@Test</span>
+  <span class="kt">void</span> <span class="nf">whenValidInput_thenReturns200</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+    <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(...);</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></table></code></div></div><blockquote><h3 id="extendwith"><span class="mr-2">@ExtendWith</span><a href="#extendwith" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>Spring Boot 2.1부터는 <code class="language-plaintext highlighter-rouge">SpringExtensio</code>을 로드할 필요가 없다. 왜냐하면 <code class="language-plaintext highlighter-rouge">@DataJpaTest</code>, <code class="language-plaintext highlighter-rouge">@WebMvcTest</code>와 <code class="language-plaintext highlighter-rouge">SpringBootTest</code>와 같은 어노테이션에 이미 메타데이터로 포함되어 있기 때문이다.</p></blockquote><p>이제 <code class="language-plaintext highlighter-rouge">@Autowired</code>로 모든 필요한 Beans를 가져올 수 있다.</p><p>또한 <code class="language-plaintext highlighter-rouge">@MockBean</code>을 통해 비지니스 로직을 모킹할 수 있다. 우리는 HTTP layer와 controller사이를 통합해서 테스트 하고 싶은거지 비지니스 로직까지 테스트하고 싶은 것은 아니다. 그래서 <code class="language-plaintext highlighter-rouge">@MockBean</code> 어노테이션을 통해 applicaiton context안에 있는 빈을 같은 타입의 mock bean으로 교체해 주었다.</p><p><code class="language-plaintext highlighter-rouge">@MockBean</code>에 대해 더 자세한 글은 <a href="https://reflectoring.io/spring-boot-mock/">이것</a>을 읽어라</p><blockquote><h3 id="webmvctest의-controllers-파라미터의-유무-차이"><span class="mr-2">@WebMvcTest의 controllers 파라미터의 유무 차이</span><a href="#webmvctest의-controllers-파라미터의-유무-차이" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>controller 파라미터를 세팅함으로서 Spring Boot에게 해당 컨트롤러와 필수적인 Spring Web MVC Bean들만 가져오게 한다. 필요할 수도 있는 다른 Bean들은 별도로 포함시키거나 <code class="language-plaintext highlighter-rouge">@MockBean</code>으로 모킹시켜야 한다. 만약 controller 파라미터를 사용하지 않는다면, 모든 controller들을 application context에 포함시키고 그러므로 모든 Bean들을 가져와야 하니까 테스트 셋업 과정이 복잡하다. 하지만 런타임시 모든 컨트롤러가 같은 application context를 사용하게 되니까 효과적일 수 있다. 나는 controller 테스트를 최대한 좁은 applicaiton context로 제한하는 편이다. 비록 Spring Boot가 테스트 마다 새로운 application context를 만들더라도 이렇게 한다.</p></blockquote><p>controller의 책임들을 하나씩 보고 최고의 통합 테스트를 작성하기 위해 MockMVC를 사용해서 각각을 검증할 수 있는지 확인하자.</p><h3 id="1-http-request-매핑"><span class="mr-2">1. HTTP Request 매핑</span><a href="#1-http-request-매핑" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>controller가 특정 HTTP request에 응답하는지 확인하는 것은 매우 간단합니다. 간단히 <code class="language-plaintext highlighter-rouge">MockMVC</code>의 <code class="language-plaintext highlighter-rouge">perform()</code> 메서드를 호출하면 됩니다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre><td class="rouge-code"><pre><span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">post</span><span class="o">(</span><span class="s">"/forums/42/register"</span><span class="o">)</span>
+          <span class="o">.</span><span class="na">contentType</span><span class="o">(</span><span class="s">"application/json"</span><span class="o">)</span>
+          <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">status</span><span class="o">().</span><span class="na">isOk</span><span class="o">()))</span>
+</pre></table></code></div></div><p>우리는 특정 URL에 controller가 응답하는지, 정확한 HTTP method와 content type을 검증한다. 우리가 작성한 controller는 예제에서 설정한 것과 다른 HTTP request에 대해서는 거부한다.</p><p>이 테스트는 아직 우리가 input parameter를 넣어주지 않았기 때문에 실패한다.</p><p>HTTP request Matcher의 옵션에 대해 더 자세히 알고 싶으면 <a href="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/test/web/servlet/request/MockHttpServletRequestBuilder.html">Javadoc</a>을 살펴보아라</p><h3 id="2-input-deserialization"><span class="mr-2">2. Input Deserialization</span><a href="#2-input-deserialization" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>Java 객체로 성공적으로 Deserialize되는지 확인하려면 Test 코드에서 Input을 제공해줘야 한다. Input은 Reqeust Body의 JSON 형태일 수 있고 URL path안에 있을 수 있고(<code class="language-plaintext highlighter-rouge">@PathVariable</code>) HTTP request의 파라미터일 수 있다.(<code class="language-plaintext highlighter-rouge">@RequestParam</code>)</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenValidInput_thenReturns200</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">UserResource</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">UserResource</span><span class="o">(</span><span class="s">"Zaphod"</span><span class="o">,</span> <span class="s">"zaphod@galaxy.net"</span><span class="o">);</span>
+
+  <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">post</span><span class="o">(</span><span class="s">"/forums/{forumId}/register"</span><span class="o">,</span> <span class="mi">42L</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">contetType</span><span class="o">(</span><span class="s">"application/json"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"sendWelComeMail"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">content</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">user</span><span class="o">)))</span>
+                <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">status</span><span class="o">().</span><span class="na">isOk</span><span class="o">())</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p><code class="language-plaintext highlighter-rouge">forumId</code>는 path variable로, <code class="language-plaintext highlighter-rouge">sendWelcomeMail</code>은 request parameter로 user정보는 request body로 넘겨주었다. request body는 Spring Boot가 제공하는 objectMapper로 객체를 JSON 형식으로 변환해서 넘겨주었다.</p><p>만약 test가 성공했다면, 우리는 <code class="language-plaintext highlighter-rouge">register()</code> 메서드가 이러한 파라미터와 자바 객체를 받고 성공적으로 파싱을 수행했구나라고 생각할 수 있다.</p><h3 id="3-요청-검증"><span class="mr-2">3. 요청 검증</span><a href="#3-요청-검증" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p><code class="language-plaintext highlighter-rouge">UserResource</code> 변수에 <code class="language-plaintext highlighter-rouge">@NotNull</code> 어노테이션을 적용해 보자.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre><td class="rouge-code"><pre><span class="nd">@Value</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserResource</span> <span class="o">{</span>
+
+  <span class="nd">@NotNull</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+
+  <span class="nd">@NotNull</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">email</span><span class="o">;</span>
+  
+<span class="o">}</span>
+</pre></table></code></div></div><p>Bean Validation은 메서드 파라미터에 <code class="language-plaintext highlighter-rouge">@Valid</code> 어노테이션을 붙혀주면 자동으로 트리거 된다. 따라서 검증이 성공한 경우에 대한 테스트는 우리가 위에 작성한 테스트 코드로 충분하다.</p><p>만약 실패하는 경우를 테스트하고 싶다면 검증을 실패하는 UserResource JSON 객체를 controller에 전달하면 된다. 그리고 나서 HTTP status 400을 검증하면 된다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenNullValue_thenReturns400</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">UserResource</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">UserResource</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="s">"zaphod@galaxy.net"</span><span class="o">);</span>
+  
+  <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">post</span><span class="o">(</span><span class="s">"/forums/{forumId}/register"</span><span class="o">,</span> <span class="mi">42L</span><span class="o">)</span>
+      <span class="o">...</span>
+      <span class="o">.</span><span class="na">content</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">user</span><span class="o">)))</span>
+      <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">status</span><span class="o">().</span><span class="na">isBadRequest</span><span class="o">());</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>어플리케이션의 검증이 얼마나 중요한지에 따라, 검증에 실패하는 테스트를 모든 가능한 경우를 만들어야 할 수도 있다. 이것은 빠르게 테스트 케이스가 늘어날 수 있어서 검증 테스트 방법에 대해 팀과 상의를 해본후 결정해야한다.</p><h3 id="4-비지니스-로직-호출"><span class="mr-2">4. 비지니스 로직 호출</span><a href="#4-비지니스-로직-호출" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>다음으로, 비지니스 로직이 기대하는대로 호출하는지 검증해보자. 이번 경우에는 비지니스 로직이 <code class="language-plaintext highlighter-rouge">RegiesterUseCase</code> 인터페이스에 의해 제공되고 이 함수는 <code class="language-plaintext highlighter-rouge">User</code> 객체와 <code class="language-plaintext highlighter-rouge">boolean</code> 변수를 기대한다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre><td class="rouge-code"><pre><span class="kd">interface</span> <span class="nc">RegisterUseCase</span> <span class="o">{</span>
+  <span class="nc">Long</span> <span class="nf">registerUser</span><span class="o">(</span><span class="nc">User</span> <span class="n">user</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">sendWelcomeMail</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>우리는 controller가 User 객체인 UserResource를 <code class="language-plaintext highlighter-rouge">regiesterUser()</code> 메서드로 전달하기를 기대한다.</p><p>이것을 검증하기 위해, application context에 <code class="language-plaintext highlighter-rouge">@MockBean</code>을 사용해 모킹된 <code class="language-plaintext highlighter-rouge">RegisterUseCase</code>를 사용할 수 있다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenValidInput_thenMapsToBusinessModel</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">UserResource</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">UserResource</span><span class="o">(</span><span class="s">"Zaphod"</span><span class="o">,</span> <span class="s">"zaphod@galaxy.net"</span><span class="o">);</span>
+  <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(...);</span>
+
+  <span class="nc">ArgumentCaptor</span><span class="o">&lt;</span><span class="nc">User</span><span class="o">&gt;</span> <span class="n">userCaptor</span> <span class="o">=</span> <span class="nc">ArgumentCaptor</span><span class="o">.</span><span class="na">forClass</span><span class="o">(</span><span class="nc">User</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+  <span class="n">verify</span><span class="o">(</span><span class="n">registerUseCase</span><span class="o">,</span> <span class="n">times</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="na">registerUser</span><span class="o">(</span><span class="n">userCaptor</span><span class="o">.</span><span class="na">capture</span><span class="o">(),</span> <span class="n">eq</span><span class="o">(</span><span class="kc">true</span><span class="o">));</span>
+  <span class="n">assertThat</span><span class="o">(</span><span class="n">userCaptor</span><span class="o">.</span><span class="na">getValue</span><span class="o">().</span><span class="na">getName</span><span class="o">()).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="s">"Zaphod"</span><span class="o">);</span>
+  <span class="n">assertThat</span><span class="o">(</span><span class="n">userCaptor</span><span class="o">.</span><span class="na">getValue</span><span class="o">().</span><span class="na">getEmail</span><span class="o">()).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="s">"zaphod@galaxy.net"</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>controller의 함수를 호출한 뒤, <code class="language-plaintext highlighter-rouge">ArgumentCaptor</code>를 이용해 <code class="language-plaintext highlighter-rouge">RegisterUseCase.registerUser()</code>에 전달되는 <code class="language-plaintext highlighter-rouge">User</code>객체를 캡쳐한다. 그리고 기대하는 값을 가지고 있는지 확인한다.</p><p><code class="language-plaintext highlighter-rouge">verify</code> 호출이 <code class="language-plaintext highlighter-rouge">regiesterUser()</code>가 정확히 한번 호출하는지 테스트한다.</p><p>우리는 User 객체를 검증하는데 많은 assertion을 사용했다. <a href="https://reflectoring.io/unit-testing-spring-boot/#creating-readable-assertions-with-assertj">커스텀 Mockito assertion methods</a>를 사용해서 더 좋은 가독성을 만들 수 있다.</p><h3 id="5-output-serialization"><span class="mr-2">5. Output Serialization</span><a href="#5-output-serialization" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>비지니스 로직이 수행된 후에는 controller가 JSON 형식으로 포함된 결과를 HTTP response에 매핑하는 것을 기대한다. 예제의 경우 HTTP response body에 검증된 UserResource 객체를 JSON 형태로 포함하는지 테스트하면 된다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenValidInput_thenReturnsUserResource</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">MvcResult</span> <span class="n">mvcResult</span> <span class="o">=</span> <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(...)</span>
+      <span class="o">...</span>
+      <span class="o">.</span><span class="na">andReturn</span><span class="o">();</span>
+
+  <span class="nc">UserResource</span> <span class="n">expectedResponseBody</span> <span class="o">=</span> <span class="o">...;</span>
+  <span class="nc">String</span> <span class="n">actualResponseBody</span> <span class="o">=</span> <span class="n">mvcResult</span><span class="o">.</span><span class="na">getResponse</span><span class="o">().</span><span class="na">getContentAsString</span><span class="o">();</span>
+  
+  <span class="n">assertThat</span><span class="o">(</span><span class="n">actualResponseBody</span><span class="o">).</span><span class="na">isEqualToIgnoringWhitespace</span><span class="o">(</span>
+              <span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">expectedResponseBody</span><span class="o">));</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>response body를 확인하기 위해, <code class="language-plaintext highlighter-rouge">andReturn()</code> 메서드를 이용해 MvcResult 타입의 변수에 HTTP 결과를 저장했다.</p><p>JSON 결과를 response body에서 읽어 기대값과 <code class="language-plaintext highlighter-rouge">isEqualToIgnoringWhitespace()</code>를 사용해 비교해 주었다. 기대값은 Java 객체를 <code class="language-plaintext highlighter-rouge">ObjectMapper</code>를 사용해서 JSON 형태로 만들 수 있다.</p><p>또한 우리는 이것은 커스텀 <code class="language-plaintext highlighter-rouge">ResultMatcher</code>를 통해 좀 더 가동석을 높일 수 있다. 뒤에 섹션에서 살펴볼 것이다.</p><h3 id="6-예외-변환"><span class="mr-2">6. 예외 변환</span><a href="#6-예외-변환" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>보통, 예외가 일어난다면, controller는 특정 HTTP status를 반환한다. 예를 들어 Request에 문제가 있다면 400이 반환되고 서버 에러가 발생하면 500이 발생한다.</p><p>스프링이 대부분의 경우 기본으로 처리한다. 하지만 만약 우리가 커스텀 예외 처리를 하고 있다면 해당 부분을 테스트하기를 원할 것이다. 우리가 JSON 형태의 유효하지 않은 field 이름과 에러 메시지를 반환한다고 하자. 아래와 같이 <code class="language-plaintext highlighter-rouge">@ControllerAdvice</code>를 만들었다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+</pre><td class="rouge-code"><pre><span class="nd">@ControllerAdvice</span>
+<span class="kd">class</span> <span class="nc">ControllerExceptionHandler</span> <span class="o">{</span>
+  <span class="nd">@ResponseStatus</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">)</span>
+  <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="nc">MethodArgumentNotValidException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+  <span class="nd">@ResponseBody</span>
+  <span class="nc">ErrorResult</span> <span class="nf">handleMethodArgumentNotValidException</span><span class="o">(</span><span class="nc">MethodArgumentNotValidException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">ErrorResult</span> <span class="n">errorResult</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ErrorResult</span><span class="o">();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">FieldError</span> <span class="n">fieldError</span> <span class="o">:</span> <span class="n">e</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getFieldErrors</span><span class="o">())</span> <span class="o">{</span>
+      <span class="n">errorResult</span><span class="o">.</span><span class="na">getFieldErrors</span><span class="o">()</span>
+              <span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">FieldValidationError</span><span class="o">(</span><span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">(),</span> 
+                  <span class="n">fieldError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">()));</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">errorResult</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Getter</span>
+  <span class="nd">@NoArgsConstructor</span>
+  <span class="kd">static</span> <span class="kd">class</span> <span class="nc">ErrorResult</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FieldValidationError</span><span class="o">&gt;</span> <span class="n">fieldErrors</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+    <span class="nc">ErrorResult</span><span class="o">(</span><span class="nc">String</span> <span class="n">field</span><span class="o">,</span> <span class="nc">String</span> <span class="n">message</span><span class="o">){</span>
+      <span class="k">this</span><span class="o">.</span><span class="na">fieldErrors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">FieldValidationError</span><span class="o">(</span><span class="n">field</span><span class="o">,</span> <span class="n">message</span><span class="o">));</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Getter</span>
+  <span class="nd">@AllArgsConstructor</span>
+  <span class="kd">static</span> <span class="kd">class</span> <span class="nc">FieldValidationError</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">field</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">message</span><span class="o">;</span>
+  <span class="o">}</span>
+  
+<span class="o">}</span>
+</pre></table></code></div></div><p>만약 Bean 검증이 실패되면 스프링은 <code class="language-plaintext highlighter-rouge">MethodArgumentNotValidException</code>을 던질 것이다. 우리는 <code class="language-plaintext highlighter-rouge">FieldError</code> 객체를 <code class="language-plaintext highlighter-rouge">ErrorResult</code> 객체로 매핑하면서 예외를 처리할 것이다. 이 예외 핸들러는 모든 Controller한테 적용된다.</p><p>이를 검증하기 위해, 객체 실패 검증 테스트를 확장한다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenNullValue_thenReturns400AndErrorResult</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">UserResource</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">UserResource</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="s">"zaphod@galaxy.net"</span><span class="o">);</span>
+
+  <span class="nc">MvcResult</span> <span class="n">mvcResult</span> <span class="o">=</span> <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(...)</span>
+          <span class="o">.</span><span class="na">contentType</span><span class="o">(</span><span class="s">"application/json"</span><span class="o">)</span>
+          <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"sendWelcomeMail"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">)</span>
+          <span class="o">.</span><span class="na">content</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">user</span><span class="o">)))</span>
+          <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">status</span><span class="o">().</span><span class="na">isBadRequest</span><span class="o">())</span>
+          <span class="o">.</span><span class="na">andReturn</span><span class="o">();</span>
+
+  <span class="nc">ErrorResult</span> <span class="n">expectedErrorResponse</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ErrorResult</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="s">"must not be null"</span><span class="o">);</span>
+  <span class="nc">String</span> <span class="n">actualResponseBody</span> <span class="o">=</span> 
+      <span class="n">mvcResult</span><span class="o">.</span><span class="na">getResponse</span><span class="o">().</span><span class="na">getContentAsString</span><span class="o">();</span>
+  <span class="nc">String</span> <span class="n">expectedResponseBody</span> <span class="o">=</span> 
+      <span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">expectedErrorResponse</span><span class="o">);</span>
+  <span class="n">assertThat</span><span class="o">(</span><span class="n">actualResponseBody</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">isEqualToIgnoringWhitespace</span><span class="o">(</span><span class="n">expectedResponseBody</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>Reponse body에서 JSON 결과를 읽고 기대값과 비교한다. HTTP status가 400인지도 확인한다.</p><p>훨씬 더 가독성이 좋은 방식으로 작성될 수 있다. 아래 챕터을 봐보자</p><h2 id="커스텀-resultmatchers-만들기"><span class="mr-2">커스텀 ResultMatchers 만들기</span><a href="#커스텀-resultmatchers-만들기" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2></h2><p>특정 assertion은 쓰기 어려울 뿐더러 읽기도 어렵다. 지난 두 예제 코드에서 살펴봤듯이 HTTP response에서 JSON String을 가져와 기대값과 비교하는 코드는 매우 길다.</p><p>운이 좋게도, MockMvc의 fluent API를 이용해 커스텀 <code class="language-plaintext highlighter-rouge">ResultMatchers</code>을 만들 수 있다.</p><h3 id="json-결과-매칭하기"><span class="mr-2">JSON 결과 매칭하기</span><a href="#json-결과-매칭하기" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>HTTP response body가 자바 객체의 JSON 형식을 포함하고 있는지 검증하기 위해 아래 코드를 사용하는게 좋아 보이지 않나?</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenValidInput_thenReturnsUserResource_withFluentApi</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">UserResource</span> <span class="n">user</span> <span class="o">=</span> <span class="o">...;</span>
+  <span class="nc">UserResource</span> <span class="n">expected</span> <span class="o">=</span> <span class="o">...;</span>
+
+  <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(...)</span>
+      <span class="o">...</span>
+      <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">responseBody</span><span class="o">().</span><span class="na">containsObjectAsJson</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="nc">UserResource</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>우리는 이제 수동으로 JSON 결과를 비교할 필요가 없다. 그리고 훨씬 가독성이 높아진다. 이 코드는 너무 자명해서 여기서 설명을 그만하겠다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ResponesBodyMatchers</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ObjectMapper</span><span class="o">();</span>
+
+  <span class="kd">public</span> <span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="nc">ResultMatcher</span> <span class="nf">containsObjectAsJson</span><span class="o">(</span>
+    <span class="nc">Object</span> <span class="n">expectedObject</span><span class="o">,</span>
+    <span class="nc">Class</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">targetClass</span>
+  <span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">mvcResult</span> <span class="o">-&gt;</span> <span class="o">{</span>
+      <span class="nc">String</span> <span class="n">json</span> <span class="o">=</span> <span class="n">mvcResult</span><span class="o">.</span><span class="na">getResponse</span><span class="o">().</span><span class="na">getContentAsString</span><span class="o">();</span>
+      <span class="no">T</span> <span class="n">actualObject</span> <span class="o">=</span> <span class="n">objectMapper</span><span class="o">.</span><span class="na">readvalue</span><span class="o">(</span><span class="n">json</span><span class="o">,</span> <span class="n">targetClass</span><span class="o">);</span>
+      <span class="n">assertThat</span><span class="o">(</span><span class="n">actualObject</span><span class="o">).</span><span class="na">isEqaulToComparingFieldByField</span><span class="o">(</span><span class="n">expectedObejct</span><span class="o">);</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="kd">static</span> <span class="nc">ResponseBodyMatchers</span> <span class="nf">responseBody</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">ResponseBodyMatchers</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>정적 메서드 <code class="language-plaintext highlighter-rouge">responseBody()</code>는 fluent API의 진입점을 제공한다. 이것은 HTTP resonse body 에서 JSON을 파싱하는 <code class="language-plaintext highlighter-rouge">ResultMatcher</code>을 반환하고 넘겨받은 기대값과 필드 by 필드로 검증한다.</p><h3 id="기대하는-검증-에러-매칭하기"><span class="mr-2">기대하는 검증 에러 매칭하기</span><a href="#기대하는-검증-에러-매칭하기" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h3></h3><p>우리는 예외 처리 테스트를 좀 더 간단하게 하기 위해 한 단계 더 나아갈 수 있다. 에러 메세지의 JSO 결과를 검증하기 위해 4 라인이 쓰였다. 아래와 같이 1 라인으로 대체할 수 있다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre><td class="rouge-code"><pre><span class="nd">@Test</span>
+<span class="kt">void</span> <span class="nf">whenNullValue_thenReturns400AndErrorResult_withFluentApi</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+  <span class="nc">UserResource</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">UserResource</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="s">"zaphod@galaxy.net"</span><span class="o">);</span>
+
+  <span class="n">mockMvc</span><span class="o">.</span><span class="na">perform</span><span class="o">(...)</span>
+      <span class="o">...</span>
+      <span class="o">.</span><span class="na">content</span><span class="o">(</span><span class="n">objectMapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">user</span><span class="o">)))</span>
+      <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">status</span><span class="o">().</span><span class="na">isBadRequest</span><span class="o">())</span>
+      <span class="o">.</span><span class="na">andExpect</span><span class="o">(</span><span class="n">responseBody</span><span class="o">().</span><span class="na">containsError</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="s">"must not be null"</span><span class="o">));</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>이런 fluent API를 쓰기위해, <code class="language-plaintext highlighter-rouge">ResponseBodyMatchers</code>에 <code class="language-plaintext highlighter-rouge">containsErrorMessageForField()</code>를 추가해야 한다.</p><div class="language-java highlighter-rouge"><div class="code-header"> <span data-label-text="Java"><i class="fas fa-code small"></i></span> <button aria-label="copy" data-title-succeed="복사되었습니다!"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ResponseBodyMatchers</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="nc">ObjectMapper</span> <span class="n">objectMapper</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ObjectMapper</span><span class="o">();</span>
+
+  <span class="kd">public</span> <span class="nc">ResultMatcher</span> <span class="nf">containsError</span><span class="o">(</span>
+        <span class="nc">String</span> <span class="n">expectedFieldName</span><span class="o">,</span> 
+        <span class="nc">String</span> <span class="n">expectedMessage</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">mvcResult</span> <span class="o">-&gt;</span> <span class="o">{</span>
+      <span class="nc">String</span> <span class="n">json</span> <span class="o">=</span> <span class="n">mvcResult</span><span class="o">.</span><span class="na">getResponse</span><span class="o">().</span><span class="na">getContentAsString</span><span class="o">();</span>
+      <span class="nc">ErrorResult</span> <span class="n">errorResult</span> <span class="o">=</span> <span class="n">objectMapper</span><span class="o">.</span><span class="na">readValue</span><span class="o">(</span><span class="n">json</span><span class="o">,</span> <span class="nc">ErrorResult</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+      <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FieldValidationError</span><span class="o">&gt;</span> <span class="n">fieldErrors</span> <span class="o">=</span> <span class="n">errorResult</span><span class="o">.</span><span class="na">getFieldErrors</span><span class="o">().</span><span class="na">stream</span><span class="o">()</span>
+              <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">fieldError</span> <span class="o">-&gt;</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="n">expectedFieldName</span><span class="o">))</span>
+              <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">fieldError</span> <span class="o">-&gt;</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getMessage</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="n">expectedMessage</span><span class="o">))</span>
+              <span class="o">.</span><span class="na">collect</span><span class="o">(</span><span class="nc">Collectors</span><span class="o">.</span><span class="na">toList</span><span class="o">());</span>
+
+      <span class="n">assertThat</span><span class="o">(</span><span class="n">fieldErrors</span><span class="o">)</span>
+              <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+              <span class="o">.</span><span class="na">withFailMessage</span><span class="o">(</span><span class="s">"expecting exactly 1 error message"</span>
+                         <span class="o">+</span> <span class="s">"with field name '%s' and message '%s'"</span><span class="o">,</span>
+                      <span class="n">expectedFieldName</span><span class="o">,</span>
+                      <span class="n">expectedMessage</span><span class="o">);</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="kd">static</span> <span class="nc">ResponseBodyMatchers</span> <span class="nf">responseBody</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">ResponseBodyMatchers</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></table></code></div></div><p>모든 더티 코드는 이 helper class에 숨겨져 있고 우리는 즐겁게 integration test에서 클린 코드를 작성할 수 있다.</p></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw mr-1"></i> <a href='/categories/spring/'>spring</a></div><div class="post-tags"> <i class="fa fa-tags fa-fw mr-1"></i> <a href="/tags/spring/" class="post-tag no-text-decoration" >spring</a> <a href="/tags/relectoring/" class="post-tag no-text-decoration" >relectoring</a> <a href="/tags/test/" class="post-tag no-text-decoration" >test</a> <a href="/tags/mvc/" class="post-tag no-text-decoration" >mvc</a> <a href="/tags/controller/" class="post-tag no-text-decoration" >controller</a> <a href="/tags/spring-boot/" class="post-tag no-text-decoration" >spring boot</a> <a href="/tags/fluent-api/" class="post-tag no-text-decoration" >fluent API</a> <a href="/tags/java/" class="post-tag no-text-decoration" >java</a> <a href="/tags/interation-test/" class="post-tag no-text-decoration" >interation test</a></div><div class="post-tail-bottom d-flex justify-content-between align-items-center mt-3 pt-5 pb-2"><div class="license-wrapper"> 이 기사는 저작권자의 <a href="https://creativecommons.org/licenses/by/4.0/"> CC BY 4.0 </a> 라이센스를 따릅니다.</div><div class="share-wrapper"> <span class="share-label text-muted mr-1">Share</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=Spring+Boot%EC%99%80+%40WebMVCTest%EB%A1%9C+MVC+Controller%EB%A5%BC+%ED%85%8C%EC%8A%A4%ED%8A%B8+%ED%95%98%EB%8A%94+%EB%B0%A9%EB%B2%95+-+oopty&url=https%3A%2F%2Foopty.github.io%2Fposts%2Fmvc-testing%2F" data-toggle="tooltip" data-placement="top" title="Twitter" target="_blank" rel="noopener" aria-label="Twitter"> <i class="fa-fw fab fa-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=Spring+Boot%EC%99%80+%40WebMVCTest%EB%A1%9C+MVC+Controller%EB%A5%BC+%ED%85%8C%EC%8A%A4%ED%8A%B8+%ED%95%98%EB%8A%94+%EB%B0%A9%EB%B2%95+-+oopty&u=https%3A%2F%2Foopty.github.io%2Fposts%2Fmvc-testing%2F" data-toggle="tooltip" data-placement="top" title="Facebook" target="_blank" rel="noopener" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://t.me/share/url?url=https%3A%2F%2Foopty.github.io%2Fposts%2Fmvc-testing%2F&text=Spring+Boot%EC%99%80+%40WebMVCTest%EB%A1%9C+MVC+Controller%EB%A5%BC+%ED%85%8C%EC%8A%A4%ED%8A%B8+%ED%95%98%EB%8A%94+%EB%B0%A9%EB%B2%95+-+oopty" data-toggle="tooltip" data-placement="top" title="Telegram" target="_blank" rel="noopener" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <i id="copy-link" class="fa-fw fas fa-link small" data-toggle="tooltip" data-placement="top" title="Copy link" data-title-succeed="링크가 복사되었습니다!"> </i> </span></div></div></div></div></div><div id="panel-wrapper" class="col-xl-3 pl-2 text-muted"><div class="access"><div id="access-lastmod" class="post"><div class="panel-heading">Recently Updated</div><ul class="post-content pl-0 pb-1 ml-1 mt-2"><li><a href="/posts/effective-java-item-1/">Effective Java 정리 Item1</a><li><a href="/posts/gc-tuning/">가비지 컬렉터 튜닝</a><li><a href="/posts/java-study1/">함수형 프로그래밍의 의미와 장점</a><li><a href="/posts/javascript-execution-concepts/">자바스크립트 동작 원리에대한 개념 정리</a><li><a href="/posts/linux-concept-is-confused/">리눅스 헷갈리는 개념 포스팅</a></ul></div><div id="access-tags"><div class="panel-heading">Trending Tags</div><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/java/">java</a> <a class="post-tag" href="/tags/effectivejava/">effectivejava</a> <a class="post-tag" href="/tags/gc/">gc</a> <a class="post-tag" href="/tags/garbege-collector/">garbege collector</a> <a class="post-tag" href="/tags/jvm/">jvm</a> <a class="post-tag" href="/tags/spring/">spring</a> <a class="post-tag" href="/tags/anotation/">anotation</a> <a class="post-tag" href="/tags/chmod/">chmod</a> <a class="post-tag" href="/tags/cms-gc/">cms gc</a> <a class="post-tag" href="/tags/collaberations/">collaberations</a></div></div></div><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script><div id="toc-wrapper" class="pl-0 pr-4 mb-5"><div class="panel-heading pl-3 pt-2 mb-2">Contents</div><nav id="toc" data-toggle="toc"></nav></div></div></div><div class="row"><div class="col-12 col-lg-11 col-xl-8"><div id="tail-wrapper" class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><div id="related-posts" class="mt-5 mb-2 mb-sm-4"><h3 class="pt-2 mt-1 mb-4 ml-1" data-toc-skip>Further Reading</h3><div class="card-deck mb-4"><div class="card"> <a href="/posts/complete-guide-to-exception-handling-in-spring-boot/"><div class="card-body"> <em class="timeago small" data-ts="1642336800" > 2022-01-16 </em><h3 class="pt-0 mt-1 mb-3" data-toc-skip>스프링 부트 예외처리 완벽 가이드</h3><div class="text-muted small"><p> 회사에서 Spring Boot 관련 프로젝트를 진행하면서 스프링에서 지원하는 어노테이션 스펙이 궁금했고 우리 프로젝트엔 어떻게 적용되어 있는지 살펴보고 싶었다. 때마침 기술관련된 내용을 잘 정리한 사이트를 찾아서 예외처리 관련된 주제를 번역하면서 정리하려고 합니다. 아래 내용은 Complete Guide to Exception Handling in S...</p></div></div></a></div><div class="card"> <a href="/posts/gc-tuning/"><div class="card-body"> <em class="timeago small" data-ts="1654967640" > 2022-06-12 </em><h3 class="pt-0 mt-1 mb-3" data-toc-skip>가비지 컬렉터 튜닝</h3><div class="text-muted small"><p> 지난 이야기 Garbage Collector에 대해 정리해놓은 글에서 Reference &amp;amp; Reachable Object와 Heap 영역의 구조, GC 알고리즘에 대해 설명했습니다. 이번 시간에는 Parallel Collector에 대해 조금 더 설명한 후에 GC 튜닝 방법에 대해 설명하려고 합니다. Parallel Collector (Thro...</p></div></div></a></div><div class="card"> <a href="/posts/java-common-methods/"><div class="card-body"> <em class="timeago small" data-ts="1673136000" > 2023-01-08 </em><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Java의 공통 메서드</h3><div class="text-muted small"><p> 안녕하세요, 오랜만에 글을 남기는데 회사에서 부서이동도 하고 출장도 갔다오면서 바쁜 나날을 보내 블로그 포스팅은 잠시 접어 두었네요. Effective Java를 읽으면서 내용 정리를 해보려고 합니다. 공부 기록 목적도 있고 복습 차원에서 글을 남기는 점 고려하시고 틀린 내용은 지적 부탁드리겠습니다~! 먼저 자바에서 기본 타입이 아닌 모든 객체는 O...</p></div></div></a></div></div></div><div class="post-navigation d-flex justify-content-between"> <a href="/posts/gc-tuning/" class="btn btn-outline-primary" prompt="Older"><p>가비지 컬렉터 튜닝</p></a> <a href="/posts/java-common-methods/" class="btn btn-outline-primary" prompt="Newer"><p>Java의 공통 메서드</p></a></div></div></div></div><footer class="d-flex w-100 justify-content-center"><div class="d-flex justify-content-between align-items-center text-muted"><div class="footer-left"><p class="mb-0"> © 2023 <a href="https://github.com/oopty">oopty</a>. <span data-toggle="tooltip" data-placement="top" title="명시되지 않는 한 이 사이트의 블로그 게시물은 작성자의 Creative Commons Attribution 4.0 International(CC BY 4.0) 라이선스에 따라 사용이 허가되었습니다.">Some rights reserved.</span></p></div><div class="footer-right"><p class="mb-0"> Powered by <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a> with <a href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener">Chirpy</a> theme.</p></div></div></footer></div><div id="search-result-wrapper" class="d-flex justify-content-center unloaded"><div class="col-12 col-sm-11 post-content"><div id="search-hints"><div id="access-tags"><div class="panel-heading">Trending Tags</div><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/java/">java</a> <a class="post-tag" href="/tags/effectivejava/">effectivejava</a> <a class="post-tag" href="/tags/gc/">gc</a> <a class="post-tag" href="/tags/garbege-collector/">garbege collector</a> <a class="post-tag" href="/tags/jvm/">jvm</a> <a class="post-tag" href="/tags/spring/">spring</a> <a class="post-tag" href="/tags/anotation/">anotation</a> <a class="post-tag" href="/tags/chmod/">chmod</a> <a class="post-tag" href="/tags/cms-gc/">cms gc</a> <a class="post-tag" href="/tags/collaberations/">collaberations</a></div></div></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><div id="mask"></div><a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button"> <i class="fas fa-angle-up"></i> </a> <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.10.0/dest/simple-jekyll-search.min.js"></script> <script> SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0"> <a href="{url}">{title}</a><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div><p>{snippet}</p></div>', noResultsText: '<p class="mt-5">검색 결과가 없습니다.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); </script> <script src="https://cdn.jsdelivr.net/combine/npm/magnific-popup@1/dist/jquery.magnific-popup.min.js,npm/lozad/dist/lozad.min.js,npm/clipboard@2/dist/clipboard.min.js"></script> <script src="https://cdn.jsdelivr.net/combine/npm/dayjs@1/dayjs.min.js,npm/dayjs@1/locale/ko.min.js,npm/dayjs@1/plugin/relativeTime.min.js,npm/dayjs@1/plugin/localizedFormat.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script> /* see: <https://docs.mathjax.org/en/latest/options/input/tex.html#tex-options> */ MathJax = { tex: { inlineMath: [ /* start/end delimiter pairs for in-line math */ ['$','$'], ['\\(','\\)'] ], displayMath: [ /* start/end delimiter pairs for display math */ ['$$', '$$'], ['\\[', '\\]'] ] } }; </script> <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"> </script> <script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script> <script defer src="/app.js"></script> <script defer src="https://www.googletagmanager.com/gtag/js?id=G-D6L4PXVM2Z"></script> <script> document.addEventListener("DOMContentLoaded", function(event) { window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-D6L4PXVM2Z'); }); </script>
